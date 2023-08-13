@@ -1,23 +1,40 @@
+const Player = (mark) => {
+  return { mark };
+};
+
+const player1 = Player("X");
+const player2 = Player("O");
+
 const gameBoard = (() => {
-  let gameboard = [];
+  let board = new Array(9);
+  let currentPlayer = player1;
   const winnerMessage = document.querySelector(".winner");
   const restartButton = document.querySelector(".restart-btn");
 
-  const showBoard = () => {
-    console.log(gameboard);
-  };
-  const addMark = (position, mark) => {
-    gameboard[position] = mark;
+  const getCurrentPlayer = () => {
+    return currentPlayer;
   };
 
-  const showMessage = (mark) => {
-    winnerMessage.textContent = `${mark} Wins!`;
+  const changeCurrentPlayer = () => {
+    if (currentPlayer == player1) {
+      currentPlayer = player2;
+    } else {
+      currentPlayer = player1;
+    }
+  };
+
+  const addMark = (position, mark) => {
+    board[position] = mark;
+  };
+
+  const showMessage = () => {
+    winnerMessage.textContent = `${currentPlayer.mark} Wins!`;
     winnerMessage.classList.add("visible");
     restartButton.classList.add("visible");
   };
 
   const clearBoard = () => {
-    gameboard = [];
+    board = [];
     for (let i = 1; i <= 9; i++) {
       const cell = document.querySelector(`.cell-${i}`);
       cell.textContent = "";
@@ -28,164 +45,79 @@ const gameBoard = (() => {
     clearBoard();
     winnerMessage.classList.remove("visible");
     restartButton.classList.remove("visible");
-    mark = "X";
+    currentPlayer = player1;
   };
-
-  const checkWin = () => {
-    // // check for rows
-    // for (let i = 0; i < 3; i++) {
-    //   let row = [];
-    //   for (let j = i * 3; j < i + 3; j++) {
-    //     row.push(gameboard[i]);
-    //   }
-    //   if (
-    //     row.every((cell) => cell == "X") &&
-    //     row.every((cell) => cell == "O")
-    //   ) {
-    //     return true;
-    //   }
-    // }
-    // return false;
-
-    // // check for columns
-    // for (let i = 0; i < 9; i = +3) {
-    //   let row = [];
-    //   for (let j = i; j < i + 3; j++) {
-    //     column.push(gameboard[i]);
-    //   }
-    //   if (
-    //     column.every((cell) => cell == "X") &&
-    //     column.every((cell) => cell == "O")
-    //   ) {
-    //     return true;
-    //   }
-    // }
-    // return false;
-
-    if (gameboard[0] === "X" && gameboard[1] === "X" && gameboard[2] === "X") {
-      showMessage("X");
-    } else if (
-      gameboard[0] === "O" &&
-      gameboard[1] === "O" &&
-      gameboard[2] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[3] === "X" &&
-      gameboard[4] === "X" &&
-      gameboard[5] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[3] === "O" &&
-      gameboard[4] === "O" &&
-      gameboard[5] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[6] === "X" &&
-      gameboard[7] === "X" &&
-      gameboard[8] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[6] === "O" &&
-      gameboard[7] === "O" &&
-      gameboard[8] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[0] === "X" &&
-      gameboard[3] === "X" &&
-      gameboard[6] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[0] === "O" &&
-      gameboard[3] === "O" &&
-      gameboard[6] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[1] === "X" &&
-      gameboard[4] === "X" &&
-      gameboard[7] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[1] === "O" &&
-      gameboard[4] === "O" &&
-      gameboard[7] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[2] === "X" &&
-      gameboard[5] === "X" &&
-      gameboard[8] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[2] === "O" &&
-      gameboard[5] === "O" &&
-      gameboard[8] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[1] === "X" &&
-      gameboard[7] === "X" &&
-      gameboard[7] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[1] === "O" &&
-      gameboard[4] === "O" &&
-      gameboard[7] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[2] === "X" &&
-      gameboard[5] === "X" &&
-      gameboard[8] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[2] === "O" &&
-      gameboard[5] === "O" &&
-      gameboard[8] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[0] === "X" &&
-      gameboard[4] === "X" &&
-      gameboard[8] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[0] === "O" &&
-      gameboard[4] === "O" &&
-      gameboard[8] === "O"
-    ) {
-      showMessage("O");
-    } else if (
-      gameboard[2] === "X" &&
-      gameboard[4] === "X" &&
-      gameboard[6] === "X"
-    ) {
-      showMessage("X");
-    } else if (
-      gameboard[2] === "O" &&
-      gameboard[4] === "O" &&
-      gameboard[6] === "O"
-    ) {
-      showMessage("O");
+  
+  const checkForRows = () => {
+    for (let i = 0; i < 9; i += 3) {
+      let row = [];
+      for (let j = i; j < i + 3; j++) {
+        row.push(board[j]);
+      }
+      if (
+        row.every((cell) => cell == "X") ||
+        row.every((cell) => cell == "O")
+      ) {
+        return true;
+      }
     }
-    // else if (gameboard.length === 9) {
-    //   const winnerMessage = document.querySelector(".winner");
-    //   winnerMessage.textContent = `Draw`;
-    //   winnerMessage.classList.add("visible");
-    // }
+    return false;
   };
-  return { addMark, checkWin, showBoard, restart };
+
+  const checkForColumns = () => {
+    for (let i = 0; i < 3; i++) {
+      let column = [];
+      for (let j = i; j < i + 7; j += 3) {
+        column.push(board[j]);
+      }
+      if (
+        column.every((cell) => cell == "X") ||
+        column.every((cell) => cell == "O")
+      ) {
+        return true;
+      }
+      return false;
+    }
+  };
+  const checkForDiagonals = () => {
+    const diagonal1 = [board[0], board[4], board[8]];
+    const diagonal2 = [board[2], board[4], board[6]];
+    const diagonals = [diagonal1, diagonal2];
+    for (let i = 0; i < 2; i++) {
+      if (
+        diagonals[i].every((cell) => cell == "X") ||
+        diagonals[i].every((cell) => cell == "O")
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+  const checkForDraw = () => {
+    for (let i = 0; i < 9; i++) {
+      if (board[i] == undefined) {
+        return false;
+      }
+    }
+    return true;
+  };
+  const checkWin = () => {
+    if (checkForColumns() || checkForRows() || checkForDiagonals()) {
+      showMessage();
+    }
+    else if (checkForDraw()) {
+      winnerMessage.textContent = "It's a draw";
+      winnerMessage.classList.add("visible");
+      restartButton.classList.add("visible");
+    }
+  };
+  return {
+    addMark,
+    getCurrentPlayer,
+    changeCurrentPlayer,
+    restart,
+    checkWin,
+  };
 })();
 
 const displayController = (() => {
@@ -206,23 +138,21 @@ const displayController = (() => {
   return { displayX, displayO };
 })();
 
-let mark = "X";
-
 for (let i = 1; i <= 9; i++) {
   const cell = document.querySelector(`.cell-${i}`);
   cell.addEventListener("click", () => {
     if (cell.textContent === "") {
-      if (mark === "X") {
+      let player = gameBoard.getCurrentPlayer();
+      if (player.mark === "X") {
         displayController.displayX(cell);
-        gameBoard.addMark(i - 1, mark);
-        mark = "O";
+        gameBoard.addMark(i - 1, player.mark);
       } else {
         displayController.displayO(cell);
-        gameBoard.addMark(i - 1, mark);
-        mark = "X";
+        gameBoard.addMark(i - 1, player.mark);
       }
     }
     gameBoard.checkWin();
+    gameBoard.changeCurrentPlayer();
   });
 }
 
