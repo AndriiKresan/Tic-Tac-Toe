@@ -8,8 +8,8 @@ const player2 = Player("O");
 const gameBoard = (() => {
   let board = new Array(9);
   let currentPlayer = player1;
-  const winnerMessage = document.querySelector(".winner");
-  const restartButton = document.querySelector(".restart-btn");
+  const _winnerMessage = document.querySelector(".winner");
+  const _restartButton = document.querySelector(".restart-btn");
 
   const getCurrentPlayer = () => {
     return currentPlayer;
@@ -24,35 +24,36 @@ const gameBoard = (() => {
   };
 
   const addMark = (position, mark) => {
-    board[position] = mark;
+    gameBoard.board[position] = mark;
   };
 
-  const showMessage = () => {
-    winnerMessage.textContent = `${currentPlayer.mark} Wins!`;
-    winnerMessage.classList.add("visible");
-    restartButton.classList.add("visible");
+  const _showMessage = () => {
+    changeCurrentPlayer();
+    _winnerMessage.textContent = `${currentPlayer.mark} Wins!`;
+    _winnerMessage.classList.add("winner-visible");
   };
 
-  const clearBoard = () => {
-    board = [];
+  const _clearBoard = () => {
+    gameBoard.board = new Array(9);
     for (let i = 1; i <= 9; i++) {
       const cell = document.querySelector(`.cell-${i}`);
-      cell.textContent = "";
+      cell.children[1].classList.remove("visible");
+      cell.children[0].classList.remove("visible");
     }
   };
 
   const restart = () => {
-    clearBoard();
-    winnerMessage.classList.remove("visible");
-    restartButton.classList.remove("visible");
+    _clearBoard();
+    _enableClicks();
+    _winnerMessage.classList.remove("winner-visible");
     currentPlayer = player1;
   };
-  
-  const checkForRows = () => {
+
+  const _checkForRows = () => {
     for (let i = 0; i < 9; i += 3) {
       let row = [];
       for (let j = i; j < i + 3; j++) {
-        row.push(board[j]);
+        row.push(gameBoard.board[j]);
       }
       if (
         row.every((cell) => cell == "X") ||
@@ -64,11 +65,11 @@ const gameBoard = (() => {
     return false;
   };
 
-  const checkForColumns = () => {
+  const _checkForColumns = () => {
     for (let i = 0; i < 3; i++) {
       let column = [];
       for (let j = i; j < i + 7; j += 3) {
-        column.push(board[j]);
+        column.push(gameBoard.board[j]);
       }
       if (
         column.every((cell) => cell == "X") ||
@@ -76,12 +77,12 @@ const gameBoard = (() => {
       ) {
         return true;
       }
-      return false;
     }
+    return false;
   };
-  const checkForDiagonals = () => {
-    const diagonal1 = [board[0], board[4], board[8]];
-    const diagonal2 = [board[2], board[4], board[6]];
+  const _checkForDiagonals = () => {
+    const diagonal1 = [gameBoard.board[0], gameBoard.board[4], gameBoard.board[8]];
+    const diagonal2 = [gameBoard.board[2], gameBoard.board[4], gameBoard.board[6]];
     const diagonals = [diagonal1, diagonal2];
     for (let i = 0; i < 2; i++) {
       if (
@@ -95,23 +96,38 @@ const gameBoard = (() => {
   };
   const checkForDraw = () => {
     for (let i = 0; i < 9; i++) {
-      if (board[i] == undefined) {
+      if (gameBoard.board[i] == undefined) {
         return false;
       }
     }
     return true;
   };
-  const checkWin = () => {
-    if (checkForColumns() || checkForRows() || checkForDiagonals()) {
-      showMessage();
+
+  const _disableClicks = () => {
+    for (let i = 1; i <= 9; i++) {
+      const cell = document.querySelector(`.cell-${i}`);
+      cell.classList.add("disabled");
     }
-    else if (checkForDraw()) {
-      winnerMessage.textContent = "It's a draw";
-      winnerMessage.classList.add("visible");
-      restartButton.classList.add("visible");
+  }
+  const _enableClicks = () => {
+    for (let i = 1; i <= 9; i++) {
+      const cell = document.querySelector(`.cell-${i}`);
+      cell.classList.remove("disabled");
+    }
+  }
+
+  const checkWin = () => {
+    if (_checkForColumns() || _checkForRows() || _checkForDiagonals()) {
+      _disableClicks();
+      _showMessage();
+    } else if (checkForDraw()) {
+      _winnerMessage.textContent = "It's a draw";
+      _winnerMessage.classList.add("winner-visible");
     }
   };
+
   return {
+    board,
     addMark,
     getCurrentPlayer,
     changeCurrentPlayer,
@@ -122,45 +138,43 @@ const gameBoard = (() => {
 
 const displayController = (() => {
   const displayX = (cell) => {
-    cell.textContent = "X";
-  };
-  const displayO = (cell) => {
-    cell.textContent = "O";
+    cell.children[1].classList.add("visible");
   };
 
-  // const displayAll = (arr) => {
-  //   for (let i = 0; i < arr.length; i++) {
-  //     const cell = document.querySelector(`.cell-${i + 1}`);
-  //     cell.textContent = arr[i];
-  //   }
-  // };
-  // return { displayAll };
+  const displayO = (cell) => {
+    cell.children[0].classList.add("visible");
+  };
+
   return { displayX, displayO };
 })();
+
+
+const displayPlayer = document.querySelector(".current-player");
+displayPlayer.textContent = "X";
+
 
 for (let i = 1; i <= 9; i++) {
   const cell = document.querySelector(`.cell-${i}`);
   cell.addEventListener("click", () => {
-    if (cell.textContent === "") {
-      let player = gameBoard.getCurrentPlayer();
-      if (player.mark === "X") {
+    const playerMark = gameBoard.getCurrentPlayer().mark;
+    if (gameBoard.board[i - 1] == undefined) {
+      if (playerMark === "X") {
         displayController.displayX(cell);
-        gameBoard.addMark(i - 1, player.mark);
-      } else {
+        gameBoard.addMark(i - 1, playerMark);
+      } else if (playerMark === "O") {
         displayController.displayO(cell);
-        gameBoard.addMark(i - 1, player.mark);
+        gameBoard.addMark(i - 1, playerMark);
       }
+      gameBoard.changeCurrentPlayer();
+      displayPlayer.textContent = gameBoard.getCurrentPlayer().mark;
     }
+
     gameBoard.checkWin();
-    gameBoard.changeCurrentPlayer();
   });
 }
 
 const restartButton = document.querySelector(".restart-btn");
 restartButton.addEventListener("click", () => {
   gameBoard.restart();
+  displayPlayer.textContent = "X";
 });
-
-// displayController.displayAll(gameBoard.gameboard);
-// displayController.displayX(2);
-// displayController.displayO(9);
